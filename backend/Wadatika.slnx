@@ -6,4 +6,7 @@
     <Project Path="backend/src/Wadatika.Domain/Wadatika.Domain.csproj" />
     <Project Path="backend/src/Wadatika.Infrastructure/Wadatika.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WadAtika.UnitTests/WadAtika.UnitTests.csproj" />
+  </Folder>
 </Solution>
