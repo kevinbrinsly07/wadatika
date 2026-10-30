@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/backend/" />
+  <Folder Name="/backend/src/">
+    <Project Path="backend/src/Wadatika.Api/Wadatika.Api.csproj" />
+    <Project Path="backend/src/Wadatika.Application/Wadatika.Application.csproj" />
+    <Project Path="backend/src/Wadatika.Domain/Wadatika.Domain.csproj" />
+    <Project Path="backend/src/Wadatika.Infrastructure/Wadatika.Infrastructure.csproj" />
+  </Folder>
+</Solution>

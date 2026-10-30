@@ -1,0 +1,28 @@
+# Environment secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+TestResults/
+coverage/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store

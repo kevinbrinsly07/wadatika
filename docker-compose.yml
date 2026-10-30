@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: wadatika-postgress
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:? Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:? Set POSTGRES_DB in .env}
+
+    ports:
+      - "${POSTGRESS_PORT:-5432}:5432"
+
+    volumes:
+      - wadatika_postgres_data:/var/lib/postgres/data
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -u $${POSTGRES_USER} -d $${POSTGRES_DB}
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  wadatika_postgres_data:
