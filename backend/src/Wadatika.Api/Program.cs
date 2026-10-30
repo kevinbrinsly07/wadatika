@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
-using WadAtika.Infrastructure.Persistence;
 using Wadatika.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
