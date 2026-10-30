@@ -1,4 +1,7 @@
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using WadAtika.Infrastructure.Persistence;
+using Wadatika.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +24,14 @@ builder.Services.AddCors(Options =>
           .AllowAnyMethod();
      });
 });
+
+var connectionString =
+     builder.Configuration.GetConnectionString("DefaultConnection")
+     ?? throw new InvalidOperationException(
+          "Database connection string is not configured. ");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+     options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
