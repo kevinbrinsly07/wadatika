@@ -1,50 +1,35 @@
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
-using Wadatika.Infrastructure.Persistence;
+using Wadatika.Application;
+using Wadatika.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Register services with the dependency injection container.
 builder.Services.AddControllers();
-
-//Register OpenAPI service
 builder.Services.AddOpenApi();
 
-//Configure frontend access
-var frontendOrigin = builder.Configuration["Frontend:Origin"] ?? "http://localhost:3000";
+var frontendOrigin = builder.Configuration["Frontend:Origin"]
+    ?? "http://localhost:3000";
 
-builder.Services.AddCors(Options =>
+builder.Services.AddCors(options =>
 {
-     Options.AddPolicy("Frontend", policy =>
+     options.AddPolicy("Frontend", policy =>
      {
-          policy
-          .WithOrigins(frontendOrigin)
-          .AllowAnyHeader()
-          .AllowAnyMethod();
+          policy.WithOrigins(frontendOrigin)
+             .AllowAnyHeader()
+             .AllowAnyMethod();
      });
 });
 
-var connectionString =
-     builder.Configuration.GetConnectionString("DefaultConnection")
-     ?? throw new InvalidOperationException(
-          "Database connection string is not configured. ");
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-     options.UseNpgsql(connectionString));
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-//Expose OpenAPI documentation in development
 if (app.Environment.IsDevelopment())
 {
      app.MapOpenApi();
 }
 
-//Configure the HTTP request pipeline.
 app.UseCors("Frontend");
-
 app.MapControllers();
 
 app.Run();
-
-

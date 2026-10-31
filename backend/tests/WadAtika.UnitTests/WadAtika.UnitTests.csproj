@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\WadAtika.Domain\WadAtika.Domain.csproj" />
+    <ProjectReference Include="..\..\src\WadAtika.Application\WadAtika.Application.csproj" />
   </ItemGroup>
 
 </Project>
