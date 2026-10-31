@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\WadAtika.Domain\WadAtika.Domain.csproj" />
+    <ProjectReference Include="..\Wadatika.Domain\Wadatika.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

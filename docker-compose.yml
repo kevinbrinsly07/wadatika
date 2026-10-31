@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:17-alpine
-    container_name: wadatika-postgress
+    container_name: wadatika-postgres
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}

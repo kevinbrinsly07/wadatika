@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Wadatika.Domain.Entities;
 
-namespace WadAtika.Infrastructure.Persistence.Configurations;
+namespace Wadatika.Infrastructure.Persistence.Configurations;
 
 public sealed class TeamConfiguration
     : IEntityTypeConfiguration<Team>

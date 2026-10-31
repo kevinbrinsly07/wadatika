@@ -6,7 +6,13 @@
     <Project Path="backend/src/Wadatika.Domain/Wadatika.Domain.csproj" />
     <Project Path="backend/src/Wadatika.Infrastructure/Wadatika.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/backend/src/Wadatika.Api/" />
+  <Folder Name="/backend/src/Wadatika.Application/" />
+  <Folder Name="/backend/src/Wadatika.Infrastructure/" />
   <Folder Name="/backend/tests/">
-    <Project Path="backend/tests/WadAtika.UnitTests/WadAtika.UnitTests.csproj" />
+    <Project Path="backend/tests/Wadatika.UnitTests/Wadatika.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/backend/tests/Wadatika.IntegrationTests/">
+    <Project Path="backend/tests/Wadatika.IntegrationTests/Wadatika.IntegrationTests.csproj" />
   </Folder>
 </Solution>

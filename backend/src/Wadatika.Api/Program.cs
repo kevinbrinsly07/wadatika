@@ -1,5 +1,6 @@
 using Wadatika.Application;
 using Wadatika.Infrastructure;
+using Wadatika.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,11 @@ if (app.Environment.IsDevelopment())
      app.MapOpenApi();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseCors("Frontend");
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;

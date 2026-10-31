@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\WadAtika.Application\WadAtika.Application.csproj" />
-    <ProjectReference Include="..\WadAtika.Domain\WadAtika.Domain.csproj" />
+    <ProjectReference Include="..\Wadatika.Application\Wadatika.Application.csproj" />
+    <ProjectReference Include="..\Wadatika.Domain\Wadatika.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="EFCore.NamingConventions" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
