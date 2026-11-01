@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Wadatika.Application.Features.Authentication;
 using Wadatika.Application.Features.Organizations;
 
 namespace Wadatika.Api.Middleware;
@@ -34,6 +35,20 @@ public sealed class ExceptionHandlingMiddleware(
                {
                     Status = StatusCodes.Status409Conflict,
                     Title = "Organization already exists",
+                    Detail = exception.Message
+               },
+
+               EmailAlreadyRegisteredException => new ProblemDetails
+               {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Email already registered",
+                    Detail = exception.Message
+               },
+
+               InvalidCredentialsException => new ProblemDetails
+               {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Invalid credentials",
                     Detail = exception.Message
                },
 

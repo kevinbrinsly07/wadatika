@@ -1,3 +1,6 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Wadatika.Application;
 using Wadatika.Infrastructure;
 using Wadatika.Api.Middleware;
@@ -10,14 +13,54 @@ builder.Services.AddOpenApi();
 var frontendOrigin = builder.Configuration["Frontend:Origin"]
     ?? "http://localhost:3000";
 
+// JWT configuration
+var jwtSecretKey = builder.Configuration["Jwt:SecretKey"]
+    ?? throw new InvalidOperationException(
+        "JWT secret key is not configured.");
+
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+    ?? throw new InvalidOperationException(
+        "JWT issuer is not configured.");
+
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+    ?? throw new InvalidOperationException(
+        "JWT audience is not configured.");
+
+var signingKey = new SymmetricSecurityKey(
+    Convert.FromBase64String(jwtSecretKey));
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = signingKey,
+
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// CORS configuration
 builder.Services.AddCors(options =>
 {
-     options.AddPolicy("Frontend", policy =>
-     {
-          policy.WithOrigins(frontendOrigin)
-             .AllowAnyHeader()
-             .AllowAnyMethod();
-     });
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins(frontendOrigin)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
 
 builder.Services.AddApplication();
@@ -27,12 +70,16 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-     app.MapOpenApi();
+    app.MapOpenApi();
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseCors("Frontend");
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
