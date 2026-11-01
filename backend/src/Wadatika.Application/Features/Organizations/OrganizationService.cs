@@ -1,6 +1,8 @@
+
 using Wadatika.Application.DTOs.Organizations;
 using Wadatika.Application.Interfaces;
 using Wadatika.Domain.Entities;
+using Wadatika.Domain.Enums;
 
 namespace Wadatika.Application.Features.Organizations;
 
@@ -10,6 +12,7 @@ public sealed class OrganizationService(
 {
     public async Task<OrganizationResponse> CreateAsync(
         CreateOrganizationRequest request,
+        Guid ownerUserId,
         CancellationToken cancellationToken)
     {
         var normalizedSlug = request.Slug.Trim().ToLowerInvariant();
@@ -27,8 +30,14 @@ public sealed class OrganizationService(
             request.Name,
             normalizedSlug);
 
+        var ownerMembership = new OrganizationMember(
+            organization.Id,
+            ownerUserId,
+            OrganizationRole.Owner);
+
         await organizationRepository.AddAsync(
             organization,
+            ownerMembership,
             cancellationToken);
 
         return MapToResponse(organization);
@@ -36,10 +45,12 @@ public sealed class OrganizationService(
 
     public async Task<OrganizationResponse?> GetByIdAsync(
         Guid id,
+        Guid userId,
         CancellationToken cancellationToken)
     {
-        var organization = await organizationRepository.GetByIdAsync(
+        var organization = await organizationRepository.GetByIdForMemberAsync(
             id,
+            userId,
             cancellationToken);
 
         return organization is null
