@@ -15,7 +15,7 @@ public sealed class AuthenticationService(
     RefreshTokenGenerator refreshTokenGenerator,
     AppDbContext dbContext,
     IConfiguration configuration)
-    : IAuthenticationService
+    : Wadatika.Application.Features.Authentication.IAuthenticationService
 {
     public async Task<UserResponse> RegisterAsync(
         RegisterRequest request,
