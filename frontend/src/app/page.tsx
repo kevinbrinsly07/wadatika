@@ -1,111 +1,140 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 
-type HealthResponse = {
-  status: string;
-  message: string;
-  timestamp: string;
-};
-
-type ApiState =
-  | { status: "loading" }
-  | { status: "success"; data: HealthResponse }
-  | { status: "error"; message: string };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+import { useAuth } from "@/features/auth/auth-context";
 
 export default function Home() {
-  const [apiState, setApiState] = useState<ApiState>({
-    status: "loading",
-  });
+  const router = useRouter();
+  const { login, status } = useAuth();
 
-  useEffect(() => {
-    const controller = new AbortController();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    async function checkApi() {
-      try {
-        const response = await fetch(`${API_URL}/api/health`, {
-          signal: controller.signal,
-        });
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-        if (!response.ok) {
-          throw new Error(`HTTP error: ${response.status}`);
-        }
+    setError("");
+    setIsSubmitting(true);
 
-        const data: HealthResponse = await response.json();
-
-        setApiState({
-          status: "success",
-          data,
-        });
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          return;
-        }
-
-        setApiState({
-          status: "error",
-          message: error instanceof Error ? error.message : "Unknown API error",
-        });
-      }
+    try {
+      await login({ email, password });
+      router.push("/dashboard");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to sign in. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
+  }
 
-    void checkApi();
-
-    return () => controller.abort();
-  }, []);
+  if (status === "loading") {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+        Restoring your session...
+      </main>
+    );
+  }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
-      <div className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-xl">
-        <p className="text-sm font-medium tracking-widest text-blue-400">
-          WADATIKA
-        </p>
+    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-12 text-white">
+      <div className="w-full max-w-md">
+        <div className="mb-8 text-center">
+          <Link href="/" className="text-2xl font-bold tracking-tight">
+            <span className="text-indigo-400">W</span>adatika
+          </Link>
 
-        <h1 className="mt-3 text-4xl font-bold">
-          Project management, simplified.
-        </h1>
+          <h1 className="mt-8 text-3xl font-bold tracking-tight">
+            Welcome back
+          </h1>
 
-        <p className="mt-3 text-slate-400">
-          Your workspace for teams, projects and tasks.
-        </p>
+          <p className="mt-2 text-sm text-slate-400">
+            Sign in to continue to your workspace.
+          </p>
+        </div>
 
-        <div className="mt-8 rounded-xl border border-slate-800 p-5">
-          <h2 className="font-semibold">
-            Backend connection
-          </h2>
-
-          {apiState.status === "loading" && (
-            <p className="mt-3 text-yellow-400">
-              Connecting to API...
-            </p>
-          )}
-
-          {apiState.status === "success" && (
-            <div className="mt-3">
-              <p className="text-green-400">
-                ● {apiState.data.status}
-              </p>
-
-              <p className="mt-2 text-sm text-slate-400">
-                {apiState.data.message}
-              </p>
-
-              <p className="mt-2 text-xs text-slate-500">
-                {new Date(
-                  apiState.data.timestamp
-                ).toLocaleString()}
-              </p>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-xl"
+        >
+          {error && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-900 bg-red-950/50 px-4 py-3 text-sm text-red-300"
+            >
+              {error}
             </div>
           )}
 
-          {apiState.status === "error" && (
-            <p className="mt-3 text-red-400">
-              API connection failed: {apiState.message}
-            </p>
-          )}
-        </div>
+          <div>
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-medium text-slate-200"
+            >
+              Email address
+            </label>
+
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-medium text-slate-200"
+            >
+              Password
+            </label>
+
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter your password"
+              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? "Signing in..." : "Sign in"}
+          </button>
+
+          <p className="text-center text-sm text-slate-400">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/register"
+              className="font-medium text-indigo-400 hover:text-indigo-300"
+            >
+              Create an account
+            </Link>
+          </p>
+        </form>
+
+        <p className="mt-6 text-center text-xs text-slate-500">
+          Wadatika — Project management for modern teams.
+        </p>
       </div>
     </main>
   );
