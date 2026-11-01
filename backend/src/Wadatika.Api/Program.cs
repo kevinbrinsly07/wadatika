@@ -1,4 +1,3 @@
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Wadatika.Application;
@@ -52,14 +51,15 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// CORS configuration
+// The explicit origin is required when allowing credentialed browser requests.
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
         policy.WithOrigins(frontendOrigin)
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
