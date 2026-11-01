@@ -15,4 +15,8 @@ public interface IAuthenticationService
     Task<LoginResponse> RefreshAsync(
         RefreshTokenRequest request,
         CancellationToken cancellationToken = default);
+
+    Task LogoutAsync(
+        string refreshToken,
+        CancellationToken cancellationToken = default);
 }
