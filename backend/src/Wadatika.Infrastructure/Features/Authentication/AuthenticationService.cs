@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Wadatika.Application.Interfaces;
 using Wadatika.Application.DTOs.Authentication;
 using Wadatika.Application.Features.Authentication;
+using Wadatika.Application.Interfaces;
 using Wadatika.Infrastructure.Authentication;
 using Wadatika.Infrastructure.Persistence;
 
@@ -15,154 +15,191 @@ public sealed class AuthenticationService(
     RefreshTokenGenerator refreshTokenGenerator,
     AppDbContext dbContext,
     IConfiguration configuration)
-    : IAuthenticationService
+    : Wadatika.Application.Features.Authentication.IAuthenticationService
 {
-     public async Task<UserResponse> RegisterAsync(
-         RegisterRequest request,
-         CancellationToken cancellationToken = default)
-     {
-          var normalizedEmail = request.Email.Trim();
+    public async Task<UserResponse> RegisterAsync(
+        RegisterRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedEmail = request.Email.Trim();
 
-          var existingUser = await userManager.FindByEmailAsync(
-              normalizedEmail);
+        var existingUser = await userManager.FindByEmailAsync(normalizedEmail);
 
-          if (existingUser is not null)
-          {
-               throw new EmailAlreadyRegisteredException(normalizedEmail);
-          }
+        if (existingUser is not null)
+        {
+            throw new EmailAlreadyRegisteredException(normalizedEmail);
+        }
 
-          var user = new ApplicationUser
-          {
-               UserName = normalizedEmail,
-               Email = normalizedEmail
-          };
+        var user = new ApplicationUser
+        {
+            UserName = normalizedEmail,
+            Email = normalizedEmail
+        };
 
-          var result = await userManager.CreateAsync(
-              user,
-              request.Password);
+        var result = await userManager.CreateAsync(user, request.Password);
 
-          if (!result.Succeeded)
-          {
-               var duplicateEmail = result.Errors.Any(error =>
-                   error.Code == "DuplicateEmail" ||
-                   error.Code == "DuplicateUserName");
+        if (!result.Succeeded)
+        {
+            var duplicateEmail = result.Errors.Any(error =>
+                error.Code == "DuplicateEmail" ||
+                error.Code == "DuplicateUserName");
 
-               if (duplicateEmail)
-               {
-                    throw new EmailAlreadyRegisteredException(normalizedEmail);
-               }
+            if (duplicateEmail)
+            {
+                throw new EmailAlreadyRegisteredException(normalizedEmail);
+            }
 
-               var errors = string.Join(
-                   ", ",
-                   result.Errors.Select(error => error.Description));
+            var errors = string.Join(
+                ", ",
+                result.Errors.Select(error => error.Description));
 
-               throw new InvalidOperationException(
-                   $"User registration failed: {errors}");
-          }
+            throw new InvalidOperationException(
+                $"User registration failed: {errors}");
+        }
 
-          return new UserResponse(
-              user.Id,
-              user.Email!);
-     }
+        return new UserResponse(user.Id, user.Email!);
+    }
 
-     public async Task<LoginResponse> LoginAsync(
-         LoginRequest request,
-         CancellationToken cancellationToken = default)
-     {
-          var normalizedEmail = request.Email.Trim();
-          var user = await userManager.FindByEmailAsync(normalizedEmail);
+    public async Task<LoginResponse> LoginAsync(
+        LoginRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedEmail = request.Email.Trim();
+        var user = await userManager.FindByEmailAsync(normalizedEmail);
 
-          if (user is null ||
-              !await userManager.CheckPasswordAsync(user, request.Password))
-          {
-               throw new InvalidCredentialsException();
-          }
+        if (user is null ||
+            !await userManager.CheckPasswordAsync(user, request.Password))
+        {
+            throw new InvalidCredentialsException();
+        }
 
-          var loginToken = jwtTokenGenerator.GenerateToken(
-              user.Id,
-              user.Email!);
-          var refreshToken = refreshTokenGenerator.GenerateToken();
-          var refreshTokenHash = refreshTokenGenerator.HashToken(refreshToken);
-          var refreshTokenExpiresAt = GetRefreshTokenExpiresAt();
-          var refreshTokenEntity = new RefreshToken(
-              user.Id,
-              refreshTokenHash,
-              refreshTokenExpiresAt);
+        var loginToken = jwtTokenGenerator.GenerateToken(
+            user.Id,
+            user.Email!);
 
-          await dbContext.RefreshTokens.AddAsync(
-              refreshTokenEntity,
-              cancellationToken);
-          await dbContext.SaveChangesAsync(cancellationToken);
+        var refreshToken = refreshTokenGenerator.GenerateToken();
+        var refreshTokenHash = refreshTokenGenerator.HashToken(refreshToken);
+        var refreshTokenExpiresAt = GetRefreshTokenExpiresAt();
 
-          return new LoginResponse(
-              user.Id,
-              user.Email!,
-              loginToken.AccessToken,
-              loginToken.ExpiresAt,
-              refreshToken,
-              refreshTokenExpiresAt);
-     }
+        await dbContext.RefreshTokens.AddAsync(
+            new RefreshToken(user.Id, refreshTokenHash, refreshTokenExpiresAt),
+            cancellationToken);
 
-     public async Task<LoginResponse> RefreshAsync(
-         RefreshTokenRequest request,
-         CancellationToken cancellationToken = default)
-     {
-          var tokenHash = refreshTokenGenerator.HashToken(request.RefreshToken);
-          var storedToken = await dbContext.RefreshTokens
-              .SingleOrDefaultAsync(
-                  token => token.TokenHash == tokenHash,
-                  cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
-          if (storedToken is null || !storedToken.IsActive)
-          {
-               throw new InvalidCredentialsException();
-          }
+        return new LoginResponse(
+            user.Id,
+            user.Email!,
+            loginToken.AccessToken,
+            loginToken.ExpiresAt,
+            refreshToken,
+            refreshTokenExpiresAt);
+    }
 
-          var user = await userManager.FindByIdAsync(
-              storedToken.UserId.ToString());
+    public async Task<LoginResponse> RefreshAsync(
+        RefreshTokenRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await using var transaction =
+            await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-          if (user is null || user.Email is null)
-          {
-               throw new InvalidCredentialsException();
-          }
+        var tokenHash = refreshTokenGenerator.HashToken(request.RefreshToken);
 
-          var loginToken = jwtTokenGenerator.GenerateToken(
-              user.Id,
-              user.Email);
-          var replacementRefreshToken = refreshTokenGenerator.GenerateToken();
-          var replacementHash = refreshTokenGenerator.HashToken(
-              replacementRefreshToken);
-          var replacementExpiresAt = GetRefreshTokenExpiresAt();
+        var storedToken = await dbContext.RefreshTokens
+            .SingleOrDefaultAsync(
+                token => token.TokenHash == tokenHash,
+                cancellationToken);
 
-          storedToken.Revoke(replacementHash);
-          await dbContext.RefreshTokens.AddAsync(
-              new RefreshToken(
-                  user.Id,
-                  replacementHash,
-                  replacementExpiresAt),
-              cancellationToken);
-          await dbContext.SaveChangesAsync(cancellationToken);
+        if (storedToken is null || !storedToken.IsActive)
+        {
+            throw new InvalidCredentialsException();
+        }
 
-          return new LoginResponse(
-              user.Id,
-              user.Email,
-              loginToken.AccessToken,
-              loginToken.ExpiresAt,
-              replacementRefreshToken,
-              replacementExpiresAt);
-     }
+        var user = await userManager.FindByIdAsync(
+            storedToken.UserId.ToString());
 
-     private DateTimeOffset GetRefreshTokenExpiresAt()
-     {
-          var refreshTokenDays = configuration.GetValue<int>(
-              "Jwt:RefreshTokenDays");
+        if (user is null || user.Email is null)
+        {
+            throw new InvalidCredentialsException();
+        }
 
-          if (refreshTokenDays <= 0)
-          {
-               throw new InvalidOperationException(
-                   "JWT refresh token lifetime must be greater than zero.");
-          }
+        var replacementRefreshToken = refreshTokenGenerator.GenerateToken();
+        var replacementHash = refreshTokenGenerator.HashToken(
+            replacementRefreshToken);
+        var replacementExpiresAt = GetRefreshTokenExpiresAt();
+        var now = DateTimeOffset.UtcNow;
 
-          return DateTimeOffset.UtcNow.AddDays(refreshTokenDays);
-     }
+        // Atomically claim this refresh token. Only one concurrent request
+        // can change an unrevoked, unexpired token.
+        var updatedRows = await dbContext.RefreshTokens
+            .Where(token =>
+                token.Id == storedToken.Id &&
+                token.RevokedAt == null &&
+                token.ExpiresAt > now)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(token => token.RevokedAt, now)
+                    .SetProperty(token => token.ReplacedByTokenHash, replacementHash),
+                cancellationToken);
+
+        if (updatedRows != 1)
+        {
+            throw new InvalidCredentialsException();
+        }
+
+        await dbContext.RefreshTokens.AddAsync(
+            new RefreshToken(
+                user.Id,
+                replacementHash,
+                replacementExpiresAt),
+            cancellationToken);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
+        var loginToken = jwtTokenGenerator.GenerateToken(
+            user.Id,
+            user.Email);
+
+        return new LoginResponse(
+            user.Id,
+            user.Email,
+            loginToken.AccessToken,
+            loginToken.ExpiresAt,
+            replacementRefreshToken,
+            replacementExpiresAt);
+    }
+
+    public async Task LogoutAsync(
+        string refreshToken,
+        CancellationToken cancellationToken = default)
+    {
+        var tokenHash = refreshTokenGenerator.HashToken(refreshToken);
+        var now = DateTimeOffset.UtcNow;
+
+        // Idempotent: an unknown or already-revoked token changes no rows.
+        await dbContext.RefreshTokens
+            .Where(token =>
+                token.TokenHash == tokenHash &&
+                token.RevokedAt == null)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    token => token.RevokedAt,
+                    now),
+                cancellationToken);
+    }
+
+    private DateTimeOffset GetRefreshTokenExpiresAt()
+    {
+        var refreshTokenDays = configuration.GetValue<int>(
+            "Jwt:RefreshTokenDays");
+
+        if (refreshTokenDays <= 0)
+        {
+            throw new InvalidOperationException(
+                "JWT refresh token lifetime must be greater than zero.");
+        }
+
+        return DateTimeOffset.UtcNow.AddDays(refreshTokenDays);
+    }
 }
