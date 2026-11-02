@@ -7,6 +7,7 @@ using Wadatika.Application.DTOs.Authentication;
 using Wadatika.Application.DTOs.Organizations;
 using Wadatika.Domain.Enums;
 using Wadatika.Infrastructure.Persistence;
+using Wadatika.Application.DTOs.Teams;
 
 namespace Wadatika.UnitTests.Integration;
 
@@ -110,6 +111,23 @@ public sealed class OrganizationApiTests : IDisposable
         Assert.NotNull(ownerMembership);
         Assert.Equal(OrganizationRole.Owner, ownerMembership.Role);
 
+        // Create a team inside the organization.
+        var createTeamResponse = await _client.PostAsJsonAsync(
+            $"/api/organizations/{organization.Id}/teams",
+            new CreateTeamRequest("Development Team"));
+
+        Assert.Equal(
+            HttpStatusCode.Created,
+            createTeamResponse.StatusCode);
+
+        var team = await createTeamResponse.Content
+            .ReadFromJsonAsync<TeamApiResponse>();
+
+        Assert.NotNull(team);
+        Assert.Equal("Development Team", team.Name);
+        Assert.Equal(organization.Id, team.OrganizationId);
+        Assert.NotEqual(Guid.Empty, team.Id);
+
         // Verify duplicate slugs return HTTP 409.
         var duplicateResponse = await _client.PostAsJsonAsync(
             "/api/organizations",
@@ -134,6 +152,13 @@ public sealed class OrganizationApiTests : IDisposable
         Assert.Equal(
             HttpStatusCode.Unauthorized,
             anonymousResponse.StatusCode);
+
+        var anonymousTeamsResponse = await _client.GetAsync(
+            $"/api/organizations/{organization.Id}/teams");
+
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            anonymousTeamsResponse.StatusCode);
 
         // Register a second user.
         var secondEmail = $"test-{Guid.NewGuid():N}@example.com";
@@ -169,6 +194,15 @@ public sealed class OrganizationApiTests : IDisposable
                 "Bearer",
                 secondLogin.AccessToken);
 
+        // A non-member must not be able to create a team.
+        var unauthorizedTeamResponse = await _client.PostAsJsonAsync(
+            $"/api/organizations/{organization.Id}/teams",
+            new CreateTeamRequest("Unauthorized Team"));
+
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            unauthorizedTeamResponse.StatusCode);
+
         // The second user is not a member of the first user's organization.
         var forbiddenResponse = await _client.GetAsync(
             $"/api/organizations/{organization.Id}");
@@ -190,6 +224,33 @@ public sealed class OrganizationApiTests : IDisposable
         Assert.Equal(
             HttpStatusCode.OK,
             ownerResponse.StatusCode);
+
+        // The organization owner must be able to list teams.
+        var getTeamsResponse = await _client.GetAsync(
+            $"/api/organizations/{organization.Id}/teams");
+
+        Assert.Equal(HttpStatusCode.OK, getTeamsResponse.StatusCode);
+
+        var teams = await getTeamsResponse.Content
+            .ReadFromJsonAsync<List<TeamApiResponse>>();
+
+        Assert.NotNull(teams);
+        Assert.Contains(teams, item => item.Id == team.Id);
+        Assert.Contains(teams, item => item.Name == "Development Team");
+
+        // Switch to the second user, who is not a member of this organization.
+        _client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue(
+                "Bearer",
+                secondLogin.AccessToken);
+
+        // A non-member must not be able to list another organization's teams.
+        var unauthorizedGetTeamsResponse = await _client.GetAsync(
+            $"/api/organizations/{organization.Id}/teams");
+
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            unauthorizedGetTeamsResponse.StatusCode);
     }
 
     private sealed record LoginApiResponse(
@@ -197,6 +258,12 @@ public sealed class OrganizationApiTests : IDisposable
         string Email,
         string AccessToken,
         DateTimeOffset ExpiresAt);
+
+    private sealed record TeamApiResponse(
+        Guid Id,
+        Guid OrganizationId,
+        string Name,
+        DateTimeOffset CreatedAt);
 
     public void Dispose()
     {

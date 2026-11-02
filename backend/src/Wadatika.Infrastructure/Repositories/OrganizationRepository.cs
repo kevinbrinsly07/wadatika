@@ -61,4 +61,18 @@ public sealed class OrganizationRepository(AppDbContext dbContext)
                     member.UserId == userId))
             .FirstOrDefaultAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Organization>> GetAllForMemberAsync(
+    Guid userId,
+    CancellationToken cancellationToken)
+    {
+        return await dbContext.Organizations
+            .AsNoTracking()
+            .Where(organization =>
+                dbContext.OrganizationMember.Any(member =>
+                    member.OrganizationId == organization.Id &&
+                    member.UserId == userId))
+            .OrderBy(organization => organization.Name)
+            .ToListAsync(cancellationToken);
+    }
 }

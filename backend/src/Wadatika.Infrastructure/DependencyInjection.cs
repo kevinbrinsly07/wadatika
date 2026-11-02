@@ -49,11 +49,13 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<AppDbContext>();
 
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<
             Wadatika.Application.Features.Authentication.IAuthenticationService,
             AuthenticationService>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddSingleton<RefreshTokenGenerator>();
+        services.AddScoped<ITeamRepository, TeamRepository>();
 
         return services;
     }

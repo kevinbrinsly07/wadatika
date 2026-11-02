@@ -44,7 +44,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-12 text-white">
+    <main className="flex min-h-screen items-center justify-center bg-[#1B211A] px-4 py-12 text-white">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="text-2xl font-bold tracking-tight">

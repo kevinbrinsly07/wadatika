@@ -210,6 +210,43 @@ namespace Wadatika.Infrastructure.Persistence.Migrations
                     b.ToTable("organization_members", (string)null);
                 });
 
+            modelBuilder.Entity("Wadatika.Domain.Entities.Project", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("projects", (string)null);
+                });
+
             modelBuilder.Entity("Wadatika.Domain.Entities.Team", b =>
                 {
                     b.Property<Guid>("Id")
@@ -419,6 +456,15 @@ namespace Wadatika.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Wadatika.Domain.Entities.OrganizationMember", b =>
+                {
+                    b.HasOne("Wadatika.Domain.Entities.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Wadatika.Domain.Entities.Project", b =>
                 {
                     b.HasOne("Wadatika.Domain.Entities.Organization", null)
                         .WithMany()

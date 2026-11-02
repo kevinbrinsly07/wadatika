@@ -3,6 +3,8 @@ using Wadatika.Application.Features.Organizations;
 using Wadatika.Application.Interfaces;
 using Wadatika.Domain.Entities;
 
+
+
 namespace Wadatika.UnitTests.Features.Organizations;
 
 public class OrganizationServiceTests
@@ -118,5 +120,22 @@ public class OrganizationServiceTests
 
             return Task.FromResult(organization);
         }
+
+        public Task<IReadOnlyList<Organization>> GetAllForMemberAsync(
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            IReadOnlyList<Organization> result = Organizations
+                .Where(organization =>
+                    OrganizationMembers.Any(member =>
+                        member.OrganizationId == organization.Id &&
+                        member.UserId == userId))
+                .OrderBy(organization => organization.Name)
+                .ToArray();
+
+            return Task.FromResult(result);
+        }
+
+
     }
 }

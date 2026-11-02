@@ -67,4 +67,17 @@ public sealed class OrganizationService(
             organization.Slug,
             organization.CreatedAt);
     }
+
+    public async Task<IReadOnlyList<OrganizationResponse>> GetAllForUserAsync(
+    Guid userId,
+    CancellationToken cancellationToken)
+    {
+        var organizations = await organizationRepository.GetAllForMemberAsync(
+            userId,
+            cancellationToken);
+
+        return organizations
+            .Select(MapToResponse)
+            .ToArray();
+    }
 }

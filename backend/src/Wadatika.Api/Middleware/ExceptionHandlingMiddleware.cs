@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Wadatika.Application.Features.Authentication;
 using Wadatika.Application.Features.Organizations;
+using Wadatika.Application.Features.Teams;
+using Wadatika.Application.Features.Projects;
 
 namespace Wadatika.Api.Middleware;
 
@@ -50,6 +52,27 @@ public sealed class ExceptionHandlingMiddleware(
                     Status = StatusCodes.Status401Unauthorized,
                     Title = "Invalid credentials",
                     Detail = exception.Message
+               },
+
+               TeamOrganizationAccessException => new ProblemDetails
+               {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Organization not found",
+                    Detail = exception.Message
+               },
+
+               ProjectKeyAlreadyExistsException => new ProblemDetails
+               {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Project key already exists",
+                    Detail = exception.Message
+               },
+
+               OrganizationAccessDeniedException => new ProblemDetails
+               {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Organization not found",
+                    Detail = "The organization was not found."
                },
 
                _ => new ProblemDetails

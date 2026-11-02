@@ -92,4 +92,27 @@ public sealed class OrganizationsController(
 
         return Ok(organization);
     }
+
+    [Authorize]
+    [HttpGet]
+    [ProducesResponseType(
+    typeof(IReadOnlyList<OrganizationResponse>),
+    StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IReadOnlyList<OrganizationResponse>>> GetMine(
+    CancellationToken cancellationToken)
+    {
+        var userIdValue = User.FindFirst("sub")?.Value;
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var organizations = await organizationService.GetAllForUserAsync(
+            userId,
+            cancellationToken);
+
+        return Ok(organizations);
+    }
 }
