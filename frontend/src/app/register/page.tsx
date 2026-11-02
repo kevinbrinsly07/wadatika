@@ -78,7 +78,7 @@ export default function RegisterPage() {
 
   if (isRegistered) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-12 text-white">
+      <main className="flex min-h-screen items-center justify-center bg-[#628141] px-4 py-12 text-white">
         <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center shadow-xl">
           <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-green-500/10 text-2xl text-green-400">
             ✓
@@ -105,25 +105,25 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-12 text-white">
+    <main className="flex min-h-screen items-center justify-center bg-[#1B211A] px-4 py-12 text-white">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="text-2xl font-bold tracking-tight">
-            <span className="text-indigo-400">W</span>adatika
+            <span className="text-[#EBD5AB]">W</span>adatika
           </Link>
 
-          <h1 className="mt-8 text-3xl font-bold tracking-tight">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight">
             Create your account
           </h1>
 
-          <p className="mt-2 text-sm text-slate-400">
+          <p className=" text-xs text-white/80">
             Start managing your projects with Wadatika.
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-xl"
+          className="space-y-5 rounded-2xl bg-[#628141] p-8 shadow-xl"
         >
           {error && (
             <div
@@ -137,7 +137,7 @@ export default function RegisterPage() {
           <div>
             <label
               htmlFor="email"
-              className="mb-2 block text-sm font-medium text-slate-200"
+              className="mb-2 block text-sm font-semibold text-black"
             >
               Email address
             </label>
@@ -151,14 +151,14 @@ export default function RegisterPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full rounded-lg bg-[#1B211A] px-4 py-3 text-xs text-white outline-none transition placeholder:text-[#628141] focus:ring-offset-[#EBD5AB] focus:ring-2 focus:ring-[#EBD5AB]"
             />
           </div>
 
           <div>
             <label
               htmlFor="password"
-              className="mb-2 block text-sm font-medium text-slate-200"
+              className="mb-2 block text-sm font-semibold text-black"
             >
               Password
             </label>
@@ -172,10 +172,10 @@ export default function RegisterPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="Create a password"
-              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full rounded-lg bg-[#1B211A] px-4 py-3 text-xs text-white outline-none transition placeholder:text-[#628141] focus:ring-offset-[#EBD5AB] focus:ring-2 focus:ring-[#EBD5AB]"
             />
 
-            <p className="mt-2 text-xs leading-5 text-slate-500">
+            <p className="mt-2 text-xs leading-4 text-black/70">
               At least 8 characters, including uppercase, lowercase,
               a number and a special character.
             </p>
@@ -184,7 +184,7 @@ export default function RegisterPage() {
           <div>
             <label
               htmlFor="confirmPassword"
-              className="mb-2 block text-sm font-medium text-slate-200"
+              className="mb-2 block text-sm font-semibold text-black"
             >
               Confirm password
             </label>
@@ -197,23 +197,23 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
               placeholder="Enter your password again"
-              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full rounded-lg bg-[#1B211A] px-4 py-3 text-xs text-white outline-none transition placeholder:text-[#628141] focus:ring-offset-[#EBD5AB] focus:ring-2 focus:ring-[#EBD5AB]"
             />
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-lg bg-[#1B211A] cursor-pointer px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#EBD5AB] hover:text-black/70 focus:outline-none focus:ring-2 focus:ring-[#EBD5AB] focus:ring-offset-2 focus:ring-offset-[#EBD5AB] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Creating account..." : "Create account"}
           </button>
 
-          <p className="text-center text-sm text-slate-400">
+          <p className="text-center text-sm text-black/70">
             Already have an account?{" "}
             <Link
               href="/"
-              className="font-medium text-indigo-400 hover:text-indigo-300"
+              className="font-medium text-black hover:text-white"
             >
               Sign in
             </Link>

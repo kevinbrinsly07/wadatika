@@ -2,32 +2,19 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-import { Sidebar } from "@/components/layout/sidebar";
+import { WorkspaceLayout } from "@/components/layout/workspace-layout";
 import { useAuth } from "@/features/auth/auth-context";
 import { OrganizationManager } from "@/features/organizations/components/organization-manager";
-import { useOrganization } from "@/features/organizations/organization-context";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, status, logout } = useAuth();
-
-  const { selectedOrganization, isLoading: isLoadingOrganizations } =
-    useOrganization();
+  const { user, status } = useAuth();
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/");
     }
   }, [status, router]);
-
-  async function handleLogout() {
-    try {
-      await logout();
-    } finally {
-      router.replace("/");
-    }
-  }
 
   if (status === "loading" || !user) {
     return (
@@ -38,41 +25,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#1B211A] text-[#628141]">
-      <div className="hidden md:block">
-        <Sidebar email={user.email} onSignOut={handleLogout} />
-      </div>
-
-      <main className="min-w-0 flex-1">
-        <header className="flex h-16 items-center justify-between px-5 sm:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500 text-sm font-bold md:hidden">
-              W
-            </div>
-            <span className="text-sm font-medium text-[#628141]">
-              {isLoadingOrganizations
-                ? "Loading organization..."
-                : (selectedOrganization?.name ?? "No organization selected")}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-lg px-3 py-2 text-sm text-[#628141] transition-colors hover:bg-[#8BAE66] md:hidden"
-          >
-            Sign out
-          </button>
-
-          <div className="hidden text-sm text-[#628141] md:block">
-            {user.email}
-          </div>
-        </header>
-
-        <div className="mx-auto max-w-6xl p-5 sm:p-8">
-          <OrganizationManager />
-        </div>
-      </main>
-    </div>
+    <WorkspaceLayout>
+    <main className="mx-auto max-w-6xl p-5 sm:p-8">
+      <OrganizationManager />
+    </main>
+  </WorkspaceLayout>
   );
 }

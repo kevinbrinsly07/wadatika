@@ -12,7 +12,7 @@ type SidebarProps = {
 
 const navigation = [
   { label: "Overview", href: "/dashboard", icon: "grid", available: true },
-  { label: "My tasks", href: "#", icon: "check", available: false },
+  { label: "My tasks", href: "/tasks", icon: "check", available: true },
   { label: "Projects", href: "/projects", icon: "folder", available: true },
   { label: "Teams", href: "#", icon: "users", available: false },
 ];
@@ -65,14 +65,8 @@ export function Sidebar({ email, onSignOut }: SidebarProps) {
   return (
     <aside className="flex h-screen w-64 shrink-0 flex-col bg-[#628141] text-[#1B211A]">
       {/* Brand */}
-      <div className="flex h-16 items-center gap-3  px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1B211A] text-sm font-bold text-[#EBD5AB]">
-          W
-        </div>
-
-        {/* <span className="text-lg font-semibold tracking-tight text-[#1B211A]">
-          Wadatika
-        </span> */}
+      <div className="flex h-16 items-center font-bold  px-6">
+        <span className="text-[#EBD5AB]">W</span>adatika
       </div>
 
       {/* Organization selector */}
@@ -85,7 +79,7 @@ export function Sidebar({ email, onSignOut }: SidebarProps) {
                 value={selectedOrganization?.id ?? ""}
                 onChange={(event) => selectOrganization(event.target.value)}
                 disabled={isLoading || organizations.length === 0}
-                className="w-full cursor-pointer truncate bg-transparent text-xs font-medium text-[#628141] outline-none disabled:cursor-not-allowed disabled:text-slate-200"
+                className="w-full cursor-pointer truncate bg-transparent text-xs font-bold text-[#628141] outline-none disabled:cursor-not-allowed disabled:text-slate-200"
               >
                 {isLoading ? (
                   <option value="">Loading organizations...</option>
@@ -106,11 +100,11 @@ export function Sidebar({ email, onSignOut }: SidebarProps) {
             </div>
           </div>
 
-          <p className="text-xs text-[#628141]">
+          {/* <p className="text-xs text-[#628141]">
             {selectedOrganization
               ? selectedOrganization.slug
               : "Create an organization to get started"}
-          </p>
+          </p> */}
         </div>
       </div>
 
@@ -169,7 +163,9 @@ export function Sidebar({ email, onSignOut }: SidebarProps) {
           </div>
 
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-[#1B211A]">{email}</p>
+            <p className="truncate text-sm font-medium text-[#1B211A]">
+              {email}
+            </p>
 
             <p className="text-xs text-[#1B211A]">Account</p>
           </div>
