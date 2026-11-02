@@ -247,6 +247,94 @@ namespace Wadatika.Infrastructure.Persistence.Migrations
                     b.ToTable("projects", (string)null);
                 });
 
+            modelBuilder.Entity("Wadatika.Domain.Entities.ProjectTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AssigneeUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssigneeUserId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("DueDate");
+
+                    b.HasIndex("ProjectId", "Status");
+
+                    b.ToTable("project_tasks", (string)null);
+                });
+
+            modelBuilder.Entity("Wadatika.Domain.Entities.TaskComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProjectTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorUserId");
+
+                    b.HasIndex("ProjectTaskId", "CreatedAt");
+
+                    b.ToTable("task_comments", (string)null);
+                });
+
             modelBuilder.Entity("Wadatika.Domain.Entities.Team", b =>
                 {
                     b.Property<Guid>("Id")
@@ -469,6 +557,41 @@ namespace Wadatika.Infrastructure.Persistence.Migrations
                     b.HasOne("Wadatika.Domain.Entities.Organization", null)
                         .WithMany()
                         .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Wadatika.Domain.Entities.ProjectTask", b =>
+                {
+                    b.HasOne("Wadatika.Infrastructure.Authentication.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AssigneeUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Wadatika.Infrastructure.Authentication.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Wadatika.Domain.Entities.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Wadatika.Domain.Entities.TaskComment", b =>
+                {
+                    b.HasOne("Wadatika.Infrastructure.Authentication.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Wadatika.Domain.Entities.ProjectTask", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

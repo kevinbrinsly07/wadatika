@@ -17,6 +17,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
      public DbSet<TeamMember> TeamMember => Set<TeamMember>();
      public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
      public DbSet<Project> Projects => Set<Project>();
+     public DbSet<ProjectTask> ProjectTasks => Set<ProjectTask>();
+     public DbSet<TaskComment> TaskComments => Set<TaskComment>();
 
      protected override void OnModelCreating(ModelBuilder modelBuilder)
      {

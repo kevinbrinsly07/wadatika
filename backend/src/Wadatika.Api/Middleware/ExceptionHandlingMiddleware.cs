@@ -3,7 +3,7 @@ using Wadatika.Application.Features.Authentication;
 using Wadatika.Application.Features.Organizations;
 using Wadatika.Application.Features.Teams;
 using Wadatika.Application.Features.Projects;
-
+using Wadatika.Application.Features.Tasks;
 namespace Wadatika.Api.Middleware;
 
 public sealed class ExceptionHandlingMiddleware(
@@ -75,6 +75,27 @@ public sealed class ExceptionHandlingMiddleware(
                     Detail = "The organization was not found."
                },
 
+               TaskProjectAccessDeniedException => new ProblemDetails
+               {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Project not found",
+                    Detail = exception.Message
+               },
+
+               TaskNotFoundException => new ProblemDetails
+               {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Task not found",
+                    Detail = exception.Message
+               },
+
+               TaskAssigneeNotFoundException => new ProblemDetails
+               {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Assignee not found",
+                    Detail = exception.Message
+               },
+
                _ => new ProblemDetails
                {
                     Status = StatusCodes.Status500InternalServerError,
@@ -82,6 +103,7 @@ public sealed class ExceptionHandlingMiddleware(
                     Detail = "An unexpected error occurred while processing your request."
                }
           };
+
 
           context.Response.StatusCode =
               problemDetails.Status ?? StatusCodes.Status500InternalServerError;

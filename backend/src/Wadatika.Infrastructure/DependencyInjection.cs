@@ -56,6 +56,8 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddSingleton<RefreshTokenGenerator>();
         services.AddScoped<ITeamRepository, TeamRepository>();
+        services.AddScoped<IProjectTaskRepository, ProjectTaskRepository>();
+        services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
 
         return services;
     }
